@@ -20,7 +20,13 @@ import {
   CheckCircle2,
   Mic,
   Headphones,
-  ExternalLink
+  ExternalLink,
+  X,
+  Briefcase,
+  History,
+  FileText,
+  Video,
+  Globe
 } from 'lucide-react';
 
 // --- Types ---
@@ -116,22 +122,26 @@ const TIMELINE_DATA = [
   {
     year: '2019',
     title: 'AFMED Media Representative',
-    description: 'International media coverage and representation, bridging Nigerian stories to global audiences.'
+    description: 'International media coverage and representation, bridging Nigerian stories to global audiences.',
+    icon: Globe
   },
   {
     year: '2021-Present',
     title: 'TheCable Contributor',
-    description: 'Specializing in political analysis, social commentary, and high-impact opinion journalism.'
+    description: 'Specializing in political analysis, social commentary, and high-impact opinion journalism.',
+    icon: FileText
   },
   {
     year: '2022-Present',
     title: 'YouTube Documentary Channel',
-    description: 'Independent filmmaking focusing on critical social issues including FGM and the Almajiri system.'
+    description: 'Independent filmmaking focusing on critical social issues including FGM and the Almajiri system.',
+    icon: Video
   },
   {
     year: '2023-Present',
     title: 'Media & PR Consultant',
-    description: 'Strategic communications, brand management, and digital media strategy for high-profile clients.'
+    description: 'Strategic communications, brand management, and digital media strategy for high-profile clients.',
+    icon: Briefcase
   }
 ];
 
@@ -505,6 +515,7 @@ const About = () => {
 const Gallery = () => {
   const categories: Category[] = ['Writing', 'News Documentaries', 'Cultural Documentaries', 'Audio Reports', 'Visual Podcast', 'Podcast', 'Journal'];
   const [filter, setFilter] = useState<Category>('Writing');
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   
   const filteredItems = MEDIA_DATA.filter(item => item.category === filter);
 
@@ -512,6 +523,11 @@ const Gallery = () => {
 
   return (
     <section id="work" className="section-padding bg-brand-surface/20">
+      <ProjectModal 
+        item={selectedItem} 
+        isOpen={!!selectedItem} 
+        onClose={() => setSelectedItem(null)} 
+      />
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <ScrollReveal>
           <div className="flex flex-col mb-12 md:mb-16 gap-8">
@@ -590,7 +606,8 @@ const Gallery = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.5 }}
-                    className="group glass-card overflow-hidden hover:-translate-y-2 hover:shadow-xl transition-all duration-500"
+                    className="group glass-card overflow-hidden hover:-translate-y-2 hover:shadow-xl transition-all duration-500 cursor-pointer"
+                    onClick={() => setSelectedItem(item)}
                   >
                     <div className="aspect-video relative overflow-hidden">
                       <img 
@@ -599,6 +616,11 @@ const Gallery = () => {
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]"
                       />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-brand-emerald/90 text-white flex items-center justify-center scale-0 group-hover:scale-100 transition-transform duration-500">
+                          <ExternalLink size={20} />
+                        </div>
+                      </div>
                       <div className="absolute top-4 left-4">
                         <span className="bg-brand-bg/80 backdrop-blur-sm text-brand-emerald text-[8px] uppercase tracking-widest px-2 py-1 rounded-sm border border-brand-emerald/20 font-bold">
                           {item.category}
@@ -611,9 +633,9 @@ const Gallery = () => {
                       <h4 className="text-lg font-bold group-hover:text-brand-emerald transition-colors line-clamp-2 leading-snug">
                         {item.title}
                       </h4>
-                      <a href={item.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-4 text-[10px] uppercase tracking-widest text-brand-emerald border-b border-brand-emerald/0 hover:border-brand-emerald transition-all font-bold">
+                      <button className="inline-block mt-4 text-[10px] uppercase tracking-widest text-brand-emerald border-b border-brand-emerald/0 hover:border-brand-emerald transition-all font-bold">
                         Explore Project
-                      </a>
+                      </button>
                     </div>
                   </motion.div>
                 ))}
@@ -675,19 +697,20 @@ const Timeline = () => {
               </div>
               
               {/* Timeline Node */}
-              <div className="absolute left-4 md:left-1/2 -translate-x-1/2 flex justify-center items-center">
+              <div className="absolute left-4 md:left-1/2 -translate-x-1/2 flex justify-center items-center h-full">
                 <motion.div 
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
-                  className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-brand-emerald relative z-10"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-brand-bg md:bg-brand-bg border border-brand-emerald flex items-center justify-center relative z-10 shadow-lg"
                 >
+                  <item.icon size={18} className="text-brand-emerald" />
                   <motion.div 
                     initial={{ opacity: 0, scale: 0 }}
                     whileInView={{ opacity: [0, 1, 0], scale: [1, 2.5, 1] }} 
                     viewport={{ once: true }}
                     transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-                    className="absolute inset-0 rounded-full bg-brand-emerald/40"
+                    className="absolute inset-0 rounded-full bg-brand-emerald/20"
                   />
                 </motion.div>
               </div>
@@ -702,6 +725,20 @@ const Timeline = () => {
 };
 
 const Contact = () => {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+    }, 1500);
+  };
+
   return (
     <section id="contact" className="section-padding bg-brand-surface/30">
       <div className="max-w-4xl mx-auto px-6">
@@ -712,23 +749,74 @@ const Contact = () => {
             <p className="text-sm md:text-base text-brand-text-secondary">For media inquiries, collaborations, or speaking engagements.</p>
           </div>
         
-          <form className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <input type="text" placeholder="Your Name" className="input-field" required />
-              <input type="email" placeholder="Your Email" className="input-field" required />
-            </div>
-            <select className="input-field appearance-none">
-              <option value="">Select Subject</option>
-              <option value="media">Media Inquiry</option>
-              <option value="collab">Collaboration</option>
-              <option value="speaking">Speaking Request</option>
-              <option value="other">Other</option>
-            </select>
-            <textarea placeholder="Your Message" rows={5} className="input-field" required />
-            <button className="cta-primary w-full h-14 flex items-center justify-center font-bold">
-              Send Message
-            </button>
-          </form>
+          <AnimatePresence mode="wait">
+            {!isSubmitted ? (
+              <motion.form 
+                key="contact-form"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, y: -20 }}
+                onSubmit={handleSubmit} 
+                className="space-y-6"
+              >
+                <div className="grid md:grid-cols-2 gap-6">
+                  <input type="text" placeholder="Your Name" className="input-field" required />
+                  <input type="email" placeholder="Your Email" className="input-field" required />
+                </div>
+                <div className="relative">
+                  <select className="input-field appearance-none" required>
+                    <option value="">Select Subject</option>
+                    <option value="media">Media Inquiry</option>
+                    <option value="collab">Collaboration</option>
+                    <option value="speaking">Speaking Request</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-brand-text-secondary/50">
+                    <ArrowUp className="rotate-180" size={14} />
+                  </div>
+                </div>
+                <textarea placeholder="Your Message" rows={5} className="input-field" required />
+                <button 
+                  disabled={isSubmitting}
+                  className="cta-primary w-full h-14 flex items-center justify-center font-bold relative overflow-hidden group"
+                >
+                  <span className={isSubmitting ? 'opacity-0' : 'opacity-100 transition-opacity'}>
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                  </span>
+                  {isSubmitting && (
+                    <motion.div 
+                      className="absolute inset-0 flex items-center justify-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    </motion.div>
+                  )}
+                </button>
+              </motion.form>
+            ) : (
+              <motion.div 
+                key="success-message"
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="text-center py-16 px-8 border border-brand-subtle glass-card bg-brand-bg select-none"
+              >
+                <div className="w-20 h-20 bg-brand-emerald/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-brand-emerald/20">
+                  <CheckCircle2 size={40} className="text-brand-emerald" />
+                </div>
+                <h4 className="text-2xl md:text-3xl font-serif font-bold mb-4">Message Sent</h4>
+                <p className="text-brand-text-secondary max-w-sm mx-auto mb-10">
+                  Thank you for reaching out. Fatima's team will get back to you shortly.
+                </p>
+                <button 
+                  onClick={() => setIsSubmitted(false)}
+                  className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-emerald border-b border-brand-emerald/40 hover:border-brand-emerald transition-all"
+                >
+                  Send another message
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </ScrollReveal>
         
         <ScrollReveal delay={0.2}>
@@ -809,6 +897,121 @@ const Footer = () => {
 };
 
 // Custom layout primitives
+const ProjectModal = ({ item, isOpen, onClose }: { item: MediaItem | null, isOpen: boolean, onClose: () => void }) => {
+  if (!item) return null;
+
+  const isVideo = item.source.toLowerCase() === 'youtube' || item.source.toLowerCase() === 'afmed';
+  
+  // Extract YouTube ID
+  let videoId = '';
+  if (isVideo) {
+    const match = item.link.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+    videoId = match ? match[1] : '';
+  }
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8"
+        >
+          {/* Overlay */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/90 backdrop-blur-xl"
+          />
+
+          {/* Modal Content */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="relative w-full max-w-5xl bg-brand-bg border border-brand-subtle shadow-2xl overflow-hidden glass-card !bg-opacity-100"
+          >
+            {/* Close Button */}
+            <button 
+              onClick={onClose}
+              className="absolute top-4 right-4 z-50 p-2 bg-black/50 text-white rounded-full hover:bg-brand-emerald transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex flex-col">
+              {/* Media Area */}
+              <div className="aspect-video w-full bg-black">
+                {isVideo && videoId ? (
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+                    title={item.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                ) : (
+                  <div className="w-full h-full relative">
+                    <img 
+                      src={item.thumbnail} 
+                      alt={item.title} 
+                      className="w-full h-full object-cover opacity-50 contrast-125"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center p-8">
+                         <div className="w-16 h-16 bg-brand-emerald/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-emerald/20">
+                            <ExternalLink size={32} className="text-brand-emerald" />
+                         </div>
+                         <p className="text-white font-bold tracking-widest text-xs uppercase">External Article</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Info Area */}
+              <div className="p-6 md:p-10">
+                <div className="flex flex-wrap items-center gap-4 mb-4">
+                  <span className="text-[10px] uppercase tracking-widest px-2 py-1 bg-brand-emerald/10 text-brand-emerald font-bold rounded">
+                    {item.category}
+                  </span>
+                  <span className="text-[10px] text-brand-text-secondary uppercase tracking-widest font-medium">
+                    {item.source} • {item.date}
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-serif font-bold mb-6 leading-tight">
+                  {item.title}
+                </h3>
+                
+                <div className="flex gap-4">
+                  <a 
+                    href={item.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="cta-primary inline-flex items-center gap-2"
+                  >
+                    {isVideo ? 'Watch on YouTube' : 'Read Full Article'} <ExternalLink size={14} />
+                  </a>
+                  <button 
+                    onClick={onClose}
+                    className="px-6 py-3 border border-brand-subtle text-[10px] uppercase tracking-widest font-bold hover:bg-brand-surface transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const SectionLabel = ({ children }: { children: ReactNode }) => (
   <span className="text-[10px] uppercase tracking-[0.4em] text-brand-text-secondary mb-4 block font-bold">
     {children}
