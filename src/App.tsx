@@ -481,7 +481,7 @@ const About = () => {
             <div className="relative group aspect-square max-w-lg mx-auto lg:ml-auto">
               <div className="absolute inset-0 grayscale hover:grayscale-0 transition-all duration-1000 overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=1000" 
+                  src="https://lh3.googleusercontent.com/d/1c1UJthGt-8DK3DPppT117oXqw4T0MaYQ" 
                   alt="Fatima Dangogo" 
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover border border-brand-subtle transition-transform duration-1000 group-hover:scale-[1.05]"
