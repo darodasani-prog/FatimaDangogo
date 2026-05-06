@@ -1,0 +1,635 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { useState, useEffect, ReactNode } from 'react';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'motion/react';
+import { 
+  Youtube, 
+  Twitter, 
+  Linkedin, 
+  Instagram, 
+  ArrowUp,
+} from 'lucide-react';
+
+// --- Types ---
+type Category = 'All' | 'Articles' | 'Documentaries' | 'Interviews' | 'Voice Notes';
+
+interface MediaItem {
+  id: string;
+  title: string;
+  category: Category;
+  source: string;
+  date: string;
+  thumbnail: string;
+  link: string;
+}
+
+// --- Data ---
+const MEDIA_DATA: MediaItem[] = [
+  {
+    id: '1',
+    title: "The Remi Tinubu era: A critical look at Nigeria's First Lady",
+    category: 'Articles',
+    source: 'TheCable',
+    date: 'June 2024',
+    thumbnail: 'https://lh3.googleusercontent.com/d/1ze8odDKFWBa9NLtNNQFwjFaiCEB7WL0Z',
+    link: 'https://www.thecable.ng/the-remi-tinubu-era-a-critical-look-at-nigerias-first-lady'
+  },
+  {
+    id: '2',
+    title: "End FGM: Dignity, Safety, Freedom",
+    category: 'Documentaries',
+    source: 'YouTube',
+    date: '2023',
+    thumbnail: 'https://img.youtube.com/vi/h5k3iiKr7xo/maxresdefault.jpg',
+    link: 'https://youtu.be/h5k3iiKr7xo?si=L0SZIjLnZIogIyNd'
+  },
+  {
+    id: '3',
+    title: "Integrating Futures: Rethinking the Almajiri System",
+    category: 'Documentaries',
+    source: 'YouTube',
+    date: '2022',
+    thumbnail: 'https://img.youtube.com/vi/udxF3AtLrR4/maxresdefault.jpg',
+    link: 'https://youtu.be/udxF3AtLrR4?si=GQoK8iXULCkCuGf5'
+  },
+  {
+    id: '4',
+    title: "AFMED Media Representative: Bridging Stories",
+    category: 'Interviews',
+    source: 'AFMED',
+    date: '2019',
+    thumbnail: 'https://img.youtube.com/vi/0HA7Lh_J3Gw/maxresdefault.jpg',
+    link: 'https://youtu.be/0HA7Lh_J3Gw?si=oH-kCvjv5ycetysh'
+  },
+  {
+    id: '5',
+    title: "Documenting the Unspoken: Social Impact in Media",
+    category: 'Documentaries',
+    source: 'YouTube',
+    date: '2024',
+    thumbnail: 'https://img.youtube.com/vi/_pp1L_d_NFQ/maxresdefault.jpg',
+    link: 'https://youtu.be/_pp1L_d_NFQ?si=Re67gmZVpoVyFLI8'
+  },
+  {
+    id: '6',
+    title: "Public Relations in the Age of Misinformation",
+    category: 'Articles',
+    source: 'Medium',
+    date: '2024',
+    thumbnail: 'https://img.youtube.com/vi/o4w7UukuLuE/maxresdefault.jpg',
+    link: 'https://youtu.be/o4w7UukuLuE?si=2p3N4_0vSJQSfh0B'
+  },
+  {
+    id: '7',
+    title: "Media Strategy and Political Analysis 2024",
+    category: 'Interviews',
+    source: 'YouTube',
+    date: '2024',
+    thumbnail: 'https://img.youtube.com/vi/S4Ne8nq5c64/maxresdefault.jpg',
+    link: 'https://youtu.be/S4Ne8nq5c64?si=57M22OQAbvb4P8Z2'
+  },
+  {
+    id: '8',
+    title: "Strategic Communications in Modern Nigeria",
+    category: 'Voice Notes',
+    source: 'YouTube',
+    date: '2024',
+    thumbnail: 'https://img.youtube.com/vi/D9penJUWTZo/maxresdefault.jpg',
+    link: 'https://youtu.be/D9penJUWTZo?si=p5IOpG6T84oGKUyd'
+  }
+];
+
+const TIMELINE_DATA = [
+  {
+    year: '2019',
+    title: 'AFMED Media Representative',
+    description: 'International media coverage and representation, bridging Nigerian stories to global audiences.'
+  },
+  {
+    year: '2021-Present',
+    title: 'TheCable Contributor',
+    description: 'Specializing in political analysis, social commentary, and high-impact opinion journalism.'
+  },
+  {
+    year: '2022-Present',
+    title: 'YouTube Documentary Channel',
+    description: 'Independent filmmaking focusing on critical social issues including FGM and the Almajiri system.'
+  },
+  {
+    year: '2023-Present',
+    title: 'Media & PR Consultant',
+    description: 'Strategic communications, brand management, and digital media strategy for high-profile clients.'
+  }
+];
+
+// --- Animation Components ---
+
+const Cursor = () => {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const [isHovering, setIsHovering] = useState(false);
+
+  const springConfig = { damping: 25, stiffness: 400 };
+  const cursorX = useSpring(mouseX, springConfig);
+  const cursorY = useSpring(mouseY, springConfig);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      setIsHovering(!!target.closest('a, button, select, input, textarea'));
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseover', handleMouseOver);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseover', handleMouseOver);
+    };
+  }, [mouseX, mouseY]);
+
+  return (
+    <motion.div
+      className="fixed top-0 left-0 w-3 h-3 bg-brand-emerald rounded-full pointer-events-none z-[9999] mix-blend-difference hidden md:block"
+      style={{
+        x: cursorX,
+        y: cursorY,
+        translateX: '-50%',
+        translateY: '-50%',
+      }}
+      animate={{
+        scale: isHovering ? 4 : 1,
+        opacity: 0.8
+      }}
+      transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+    />
+  );
+};
+
+const ScrollReveal = ({ children, delay = 0 }: { children: ReactNode, delay?: number }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, delay, ease: [0.21, 0.47, 0.32, 0.98] }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+// --- Components ---
+
+const Navbar = () => {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-brand-bg/95 backdrop-blur-md py-4 border-b border-brand-subtle shadow-sm' : 'py-6 md:py-8'}`}>
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
+        <motion.a 
+          href="#home"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="group flex items-center gap-3"
+        >
+          <div className="w-7 h-7 md:w-8 md:h-8 border border-brand-emerald flex items-center justify-center font-serif text-xs md:text-sm text-brand-emerald font-bold group-hover:bg-brand-emerald group-hover:text-white transition-all duration-300">
+            FD
+          </div>
+          <span className="font-serif text-xs md:text-sm tracking-[0.2em] text-brand-text font-bold uppercase hidden sm:block">
+            Fatima Dangogo
+          </span>
+        </motion.a>
+        
+        <div className="flex gap-2 min-[375px]:gap-4 md:gap-10 text-[7px] min-[375px]:text-[8px] md:text-[10px] uppercase tracking-wider md:tracking-[0.3em] font-bold text-brand-text-secondary">
+          {['About', 'Work', 'Timeline', 'Contact'].map((item) => (
+            <a key={item} href={`#${item.toLowerCase()}`} className="nav-link">
+              {item}
+            </a>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+const Hero = () => {
+  const containerVars = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.3
+      }
+    }
+  };
+
+  const itemVars = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] } }
+  };
+
+  return (
+    <section id="home" className="relative h-[100dvh] min-h-[500px] flex items-center justify-center overflow-hidden bg-brand-bg px-6">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(5,150,105,0.02)_0%,transparent_70%)]" />
+      
+      <motion.div 
+        variants={containerVars}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 text-center max-w-4xl mx-auto"
+      >
+        <motion.h1 
+          variants={itemVars}
+          className="text-5xl md:text-8xl font-serif font-bold tracking-tighter mb-6 uppercase leading-[0.9]"
+        >
+          Fatima Dangogo
+        </motion.h1>
+        
+        <motion.p 
+          variants={itemVars}
+          className="text-sm md:text-xl text-brand-text-secondary tracking-[0.2em] md:tracking-widest uppercase mb-4 font-medium"
+        >
+          Journalist. Media Strategist. Documentary Storyteller.
+        </motion.p>
+        
+        <motion.p 
+          variants={itemVars}
+          className="text-brand-text-secondary/60 max-w-md mx-auto mb-10 text-xs md:text-base italic leading-relaxed"
+        >
+          "Amplifying voices through journalism, PR, and documentary filmmaking."
+        </motion.p>
+        
+        <motion.div variants={itemVars}>
+          <a href="#work" className="cta-primary inline-block">
+            View Portfolio
+          </a>
+        </motion.div>
+      </motion.div>
+    </section>
+  );
+};
+
+const About = () => {
+  return (
+    <section id="about" className="section-padding bg-brand-bg relative overflow-hidden">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+        <div className="grid lg:grid-cols-2 gap-12 md:gap-24 items-center">
+          <ScrollReveal>
+            <div className="max-w-xl">
+              <SectionLabel>About Fatima</SectionLabel>
+              <h3 className="text-3xl md:text-4xl font-serif mb-6 md:mb-8 leading-tight font-bold">
+                Bridging Traditional Journalism with Digital Media Strategy
+              </h3>
+              <div className="space-y-6 text-brand-text-secondary leading-relaxed text-base md:text-lg">
+                <p>
+                  Fatima Dangogo is a Nigerian journalist, media consultant, and documentary filmmaker. 
+                  A contributor to TheCable, one of Nigeria's leading independent news platforms, she specializes 
+                  in political analysis, social commentary, and in-depth storytelling.
+                </p>
+                <p>
+                  Through her YouTube channel, she produces documentary content addressing critical social issues 
+                  including female genital mutilation, the Almajiri education system, and women's rights. 
+                </p>
+                <p>
+                  With a background in media and public relations, Fatima creates content that informs, 
+                  challenges, and inspires action, leveraging her unique position at the intersection of media and advocacy.
+                </p>
+              </div>
+              
+              <div className="mt-12 grid grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-8 items-center border-t border-brand-subtle pt-8">
+                {[
+                  "5+ Years in Media",
+                  "TheCable Contributor",
+                  "Documentary Filmmaker",
+                  "PR Consultant"
+                ].map((stat, i) => (
+                  <div key={stat} className="flex items-center gap-3 md:gap-4">
+                    <span className="text-[9px] md:text-[10px] uppercase tracking-widest text-brand-text-secondary font-bold">{stat}</span>
+                    {i < 3 && <div className="hidden md:block h-4 w-px bg-brand-emerald/30" />}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
+          
+          <ScrollReveal delay={0.2}>
+            <div className="relative group aspect-square max-w-lg mx-auto lg:ml-auto">
+              <div className="absolute inset-0 grayscale hover:grayscale-0 transition-all duration-1000 overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=1000" 
+                  alt="Fatima Dangogo" 
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover border border-brand-subtle transition-transform duration-1000 group-hover:scale-[1.05]"
+                />
+              </div>
+              <div className="absolute -bottom-4 -right-4 md:-bottom-8 md:-right-8 w-full h-full border-2 border-brand-emerald/10 -z-10 transition-transform duration-700 group-hover:translate-x-2 group-hover:translate-y-2" />
+            </div>
+          </ScrollReveal>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Gallery = () => {
+  const [filter, setFilter] = useState<Category>('All');
+  const filteredItems = MEDIA_DATA.filter(item => filter === 'All' || item.category === filter);
+
+  return (
+    <section id="work" className="section-padding bg-brand-surface/20">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+        <ScrollReveal>
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-12 md:mb-16 gap-8">
+            <div>
+              <SectionLabel>Portfolio</SectionLabel>
+              <h3 className="text-3xl md:text-4xl font-serif font-bold">Featured Work</h3>
+            </div>
+            
+            <div className="flex overflow-x-auto pb-4 md:pb-0 md:flex-wrap gap-3 md:gap-4 no-scrollbar">
+              {(['All', 'Articles', 'Documentaries', 'Interviews', 'Voice Notes'] as Category[]).map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setFilter(cat)}
+                  className={`text-[9px] md:text-[10px] uppercase tracking-widest px-4 py-2 border transition-all duration-300 font-bold whitespace-nowrap min-w-max md:min-w-0 ${
+                    filter === cat 
+                      ? 'border-brand-emerald text-brand-emerald bg-white shadow-sm' 
+                      : 'border-brand-subtle text-brand-text-secondary hover:border-brand-text-secondary'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <motion.div 
+          layout
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
+          <AnimatePresence mode="popLayout">
+            {filteredItems.map((item) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.5 }}
+                className="group glass-card overflow-hidden hover:-translate-y-2 hover:shadow-xl transition-all duration-500"
+              >
+                <div className="aspect-video relative overflow-hidden">
+                  <img 
+                    src={item.thumbnail} 
+                    alt={item.title} 
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-brand-bg/80 backdrop-blur-sm text-brand-emerald text-[8px] uppercase tracking-widest px-2 py-1 rounded-sm border border-brand-emerald/20 font-bold">
+                      {item.category}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="p-6 md:p-8">
+                  <span className="text-[10px] text-brand-text-secondary/60 block mb-2 font-medium">{item.source} • {item.date}</span>
+                  <h4 className="text-lg font-bold group-hover:text-brand-emerald transition-colors line-clamp-2 leading-snug">
+                    {item.title}
+                  </h4>
+                  <a href={item.link} className="inline-block mt-4 text-[10px] uppercase tracking-widest text-brand-emerald border-b border-brand-emerald/0 hover:border-brand-emerald transition-all font-bold">
+                    Explore Project
+                  </a>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+        
+        <ScrollReveal>
+          <div className="mt-16 text-center">
+            <button className="cta-primary min-w-[200px]">
+              Load More Stories
+            </button>
+          </div>
+        </ScrollReveal>
+      </div>
+    </section>
+  );
+};
+
+const Timeline = () => {
+  return (
+    <section id="timeline" className="section-padding max-w-[1400px] mx-auto px-6 md:px-12">
+      <ScrollReveal>
+        <div className="text-center mb-16 md:mb-20">
+          <SectionLabel>Chronology</SectionLabel>
+          <h3 className="text-3xl md:text-4xl font-serif font-bold">Career Path</h3>
+        </div>
+      </ScrollReveal>
+      
+      <div className="relative">
+        {/* Continuous Line */}
+        <div className="absolute left-4 md:left-1/2 md:-translate-x-1/2 top-0 bottom-0 w-px bg-brand-emerald/20" />
+        
+        <div className="space-y-12 md:space-y-0">
+          {TIMELINE_DATA.map((item, index) => (
+            <div 
+              key={item.year}
+              className={`flex flex-col md:flex-row items-start md:items-center ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
+            >
+              {/* Content Panel */}
+              <div className="w-full md:w-1/2 pl-12 md:px-12 mb-0 md:mb-0">
+                <ScrollReveal delay={index * 0.1}>
+                  <div className={`p-6 md:p-8 glass-card w-full max-w-lg ${index % 2 === 0 ? 'md:text-right' : 'md:text-left'} hover:border-brand-emerald/30 transition-colors duration-500`}>
+                    <span className="text-xl md:text-2xl font-serif text-brand-emerald block mb-2 font-bold">{item.year}</span>
+                    <h4 className="text-lg md:text-xl font-bold mb-3 md:mb-4">{item.title}</h4>
+                    <p className="text-brand-text-secondary text-xs md:text-sm leading-relaxed">{item.description}</p>
+                  </div>
+                </ScrollReveal>
+              </div>
+              
+              {/* Timeline Node */}
+              <div className="absolute left-4 md:left-1/2 -translate-x-1/2 flex justify-center items-center">
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  whileInView={{ scale: 1 }}
+                  viewport={{ once: true }}
+                  className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-brand-emerald relative z-10"
+                >
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: [0, 1, 0], scale: [1, 2.5, 1] }} 
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                    className="absolute inset-0 rounded-full bg-brand-emerald/40"
+                  />
+                </motion.div>
+              </div>
+              
+              <div className="hidden md:block md:w-1/2" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Contact = () => {
+  return (
+    <section id="contact" className="section-padding bg-brand-surface/30">
+      <div className="max-w-4xl mx-auto px-6">
+        <ScrollReveal>
+          <div className="text-center mb-12 md:mb-16">
+            <SectionLabel>Inquiry</SectionLabel>
+            <h3 className="text-3xl md:text-4xl font-serif font-bold mb-4 text-brand-text-primary">Get In Touch</h3>
+            <p className="text-sm md:text-base text-brand-text-secondary">For media inquiries, collaborations, or speaking engagements.</p>
+          </div>
+        
+          <form className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <input type="text" placeholder="Your Name" className="input-field" required />
+              <input type="email" placeholder="Your Email" className="input-field" required />
+            </div>
+            <select className="input-field appearance-none">
+              <option value="">Select Subject</option>
+              <option value="media">Media Inquiry</option>
+              <option value="collab">Collaboration</option>
+              <option value="speaking">Speaking Request</option>
+              <option value="other">Other</option>
+            </select>
+            <textarea placeholder="Your Message" rows={5} className="input-field" required />
+            <button className="cta-primary w-full h-14 flex items-center justify-center font-bold">
+              Send Message
+            </button>
+          </form>
+        </ScrollReveal>
+        
+        <ScrollReveal delay={0.2}>
+          <div className="mt-20 border-t border-brand-subtle pt-12 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div>
+              <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-brand-text-secondary mb-2 font-bold">Direct Contact</p>
+              <a href="mailto:hello@fatimadangogo.com" className="text-lg md:text-xl font-serif hover:text-brand-emerald transition-colors font-bold break-all md:break-normal">
+                hello@fatimadangogo.com
+              </a>
+            </div>
+            
+            <div className="flex gap-6">
+              {[
+                { icon: Youtube, label: 'YouTube' },
+                { icon: Twitter, label: 'Twitter' },
+                { icon: Linkedin, label: 'LinkedIn' },
+                { icon: Instagram, label: 'Instagram' }
+              ].map((social) => (
+                <a 
+                  key={social.label}
+                  href="#" 
+                  className="text-brand-text-secondary hover:text-brand-emerald transition-all hover:-translate-y-2"
+                  aria-label={social.label}
+                >
+                  <social.icon size={20} />
+                </a>
+              ))}
+            </div>
+          </div>
+        </ScrollReveal>
+      </div>
+    </section>
+  );
+};
+
+const Footer = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => setIsVisible(window.scrollY > 500);
+    window.addEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  return (
+    <footer className="py-12 border-t border-brand-subtle bg-brand-bg">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="flex items-center gap-4">
+          <div className="w-8 h-8 border border-brand-emerald/30 flex items-center justify-center font-serif text-sm text-brand-emerald/60 font-bold">
+            FD
+          </div>
+          <p className="text-xs text-brand-text-secondary/60 font-medium">
+            © {new Date().getFullYear()} Fatima Dangogo. All rights reserved.
+          </p>
+        </div>
+        
+        <div className="flex gap-8 text-[10px] uppercase tracking-widest text-brand-text-secondary/60 font-bold">
+          <a href="#" className="hover:text-brand-emerald transition-colors">Privacy</a>
+          <a href="#" className="hover:text-brand-emerald transition-colors">Terms</a>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {isVisible && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            onClick={() => window.scrollTo({ top: 0 })}
+            className="fixed bottom-8 right-8 w-10 h-10 border border-brand-emerald text-brand-emerald flex items-center justify-center hover:bg-brand-emerald hover:text-white transition-all z-[90] backdrop-blur-sm bg-brand-bg/50"
+          >
+            <ArrowUp size={16} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </footer>
+  );
+};
+
+// Custom layout primitives
+const SectionLabel = ({ children }: { children: ReactNode }) => (
+  <span className="text-[10px] uppercase tracking-[0.4em] text-brand-text-secondary mb-4 block font-bold">
+    {children}
+  </span>
+);
+
+export default function App() {
+  return (
+    <div className="min-h-screen selection:bg-brand-emerald selection:text-white bg-brand-bg md:cursor-none overflow-x-hidden">
+      <Cursor />
+      <Navbar />
+      <main>
+        <Hero />
+        <About />
+        <Gallery />
+        <Timeline />
+        <Contact />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+// Add these to index.css if they were used as classes (I used tailwind equivalents in JS but defined them here for consistency)
+/**
+.text-small-label {
+  @apply text-[10px] uppercase tracking-[0.4em] text-brand-text-secondary mb-4 block font-medium;
+}
+**/
