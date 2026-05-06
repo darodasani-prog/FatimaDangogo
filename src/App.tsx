@@ -17,16 +17,19 @@ import {
   Instagram, 
   ArrowUp,
   Star,
-  CheckCircle2
+  CheckCircle2,
+  Mic,
+  Headphones,
+  ExternalLink
 } from 'lucide-react';
 
 // --- Types ---
-type Category = 'All' | 'Articles' | 'Documentaries' | 'Interviews' | 'Voice Notes';
+type Category = 'Writing' | 'News Documentaries' | 'Cultural Documentaries' | 'Audio Reports' | 'Visual Podcast' | 'Podcast' | 'Journal' | 'All';
 
 interface MediaItem {
   id: string;
   title: string;
-  category: Category;
+  category: Exclude<Category, 'All'>;
   source: string;
   date: string;
   thumbnail: string;
@@ -38,7 +41,7 @@ const MEDIA_DATA: MediaItem[] = [
   {
     id: '1',
     title: "The Remi Tinubu era: A critical look at Nigeria's First Lady",
-    category: 'Articles',
+    category: 'Writing',
     source: 'TheCable',
     date: 'June 2024',
     thumbnail: 'https://lh3.googleusercontent.com/d/1ze8odDKFWBa9NLtNNQFwjFaiCEB7WL0Z',
@@ -47,7 +50,7 @@ const MEDIA_DATA: MediaItem[] = [
   {
     id: '2',
     title: "End FGM: Dignity, Safety, Freedom",
-    category: 'Documentaries',
+    category: 'News Documentaries',
     source: 'YouTube',
     date: '2023',
     thumbnail: 'https://img.youtube.com/vi/h5k3iiKr7xo/maxresdefault.jpg',
@@ -56,7 +59,7 @@ const MEDIA_DATA: MediaItem[] = [
   {
     id: '3',
     title: "Integrating Futures: Rethinking the Almajiri System",
-    category: 'Documentaries',
+    category: 'News Documentaries',
     source: 'YouTube',
     date: '2022',
     thumbnail: 'https://img.youtube.com/vi/udxF3AtLrR4/maxresdefault.jpg',
@@ -65,7 +68,7 @@ const MEDIA_DATA: MediaItem[] = [
   {
     id: '4',
     title: "AFMED Media Representative: Bridging Stories",
-    category: 'Interviews',
+    category: 'Visual Podcast',
     source: 'AFMED',
     date: '2019',
     thumbnail: 'https://img.youtube.com/vi/0HA7Lh_J3Gw/maxresdefault.jpg',
@@ -74,7 +77,7 @@ const MEDIA_DATA: MediaItem[] = [
   {
     id: '5',
     title: "Documenting the Unspoken: Social Impact in Media",
-    category: 'Documentaries',
+    category: 'Cultural Documentaries',
     source: 'YouTube',
     date: '2024',
     thumbnail: 'https://img.youtube.com/vi/_pp1L_d_NFQ/maxresdefault.jpg',
@@ -83,7 +86,7 @@ const MEDIA_DATA: MediaItem[] = [
   {
     id: '6',
     title: "Public Relations in the Age of Misinformation",
-    category: 'Articles',
+    category: 'Writing',
     source: 'Medium',
     date: '2024',
     thumbnail: 'https://img.youtube.com/vi/o4w7UukuLuE/maxresdefault.jpg',
@@ -92,7 +95,7 @@ const MEDIA_DATA: MediaItem[] = [
   {
     id: '7',
     title: "Media Strategy and Political Analysis 2024",
-    category: 'Interviews',
+    category: 'Visual Podcast',
     source: 'YouTube',
     date: '2024',
     thumbnail: 'https://img.youtube.com/vi/S4Ne8nq5c64/maxresdefault.jpg',
@@ -101,7 +104,7 @@ const MEDIA_DATA: MediaItem[] = [
   {
     id: '8',
     title: "Strategic Communications in Modern Nigeria",
-    category: 'Voice Notes',
+    category: 'Visual Podcast',
     source: 'YouTube',
     date: '2024',
     thumbnail: 'https://img.youtube.com/vi/D9penJUWTZo/maxresdefault.jpg',
@@ -227,6 +230,9 @@ const Navbar = () => {
               {item}
             </a>
           ))}
+          <a href="http://ummydee.blogspot.com" target="_blank" rel="noopener noreferrer" className="nav-link flex items-center gap-1 text-brand-emerald">
+            Journal <ExternalLink size={10} />
+          </a>
         </div>
       </div>
     </nav>
@@ -497,28 +503,32 @@ const About = () => {
 };
 
 const Gallery = () => {
-  const [filter, setFilter] = useState<Category>('All');
-  const filteredItems = MEDIA_DATA.filter(item => filter === 'All' || item.category === filter);
+  const categories: Category[] = ['Writing', 'News Documentaries', 'Cultural Documentaries', 'Audio Reports', 'Visual Podcast', 'Podcast', 'Journal'];
+  const [filter, setFilter] = useState<Category>('Writing');
+  
+  const filteredItems = MEDIA_DATA.filter(item => item.category === filter);
+
+  const isPlaceholderCategory = filter === 'Podcast' || filter === 'Audio Reports';
 
   return (
     <section id="work" className="section-padding bg-brand-surface/20">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12">
         <ScrollReveal>
-          <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-12 md:mb-16 gap-8">
+          <div className="flex flex-col mb-12 md:mb-16 gap-8">
             <div>
               <SectionLabel>Portfolio</SectionLabel>
-              <h3 className="text-3xl md:text-4xl font-serif font-bold">Featured Work</h3>
+              <h3 className="text-3xl md:text-4xl font-serif font-bold">Media Gallery</h3>
             </div>
             
-            <div className="flex overflow-x-auto pb-4 md:pb-0 md:flex-wrap gap-3 md:gap-4 no-scrollbar">
-              {(['All', 'Articles', 'Documentaries', 'Interviews', 'Voice Notes'] as Category[]).map(cat => (
+            <div className="flex overflow-x-auto pb-4 md:pb-2 gap-3 md:gap-4 no-scrollbar border-b border-brand-subtle">
+              {categories.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setFilter(cat)}
-                  className={`text-[9px] md:text-[10px] uppercase tracking-widest px-4 py-2 border transition-all duration-300 font-bold whitespace-nowrap min-w-max md:min-w-0 ${
+                  className={`text-[9px] md:text-[10px] uppercase tracking-widest pb-4 transition-all duration-300 font-bold whitespace-nowrap border-b-2 ${
                     filter === cat 
-                      ? 'border-brand-emerald text-brand-emerald bg-white shadow-sm' 
-                      : 'border-brand-subtle text-brand-text-secondary hover:border-brand-text-secondary'
+                      ? 'border-brand-emerald text-brand-emerald' 
+                      : 'border-transparent text-brand-text-secondary/60 hover:text-brand-text-secondary'
                   }`}
                 >
                   {cat}
@@ -528,53 +538,103 @@ const Gallery = () => {
           </div>
         </ScrollReveal>
 
-        <motion.div 
-          layout
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          <AnimatePresence mode="popLayout">
-            {filteredItems.map((item) => (
+        <div className="min-h-[400px]">
+          <AnimatePresence mode="wait">
+            {filter === 'Journal' ? (
               <motion.div
-                key={item.id}
-                layout
+                key="journal-redirect"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.5 }}
-                className="group glass-card overflow-hidden hover:-translate-y-2 hover:shadow-xl transition-all duration-500"
+                className="max-w-xl mx-auto text-center py-20 glass-card"
               >
-                <div className="aspect-video relative overflow-hidden">
-                  <img 
-                    src={item.thumbnail} 
-                    alt={item.title} 
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-brand-bg/80 backdrop-blur-sm text-brand-emerald text-[8px] uppercase tracking-widest px-2 py-1 rounded-sm border border-brand-emerald/20 font-bold">
-                      {item.category}
-                    </span>
-                  </div>
+                <div className="w-16 h-16 bg-brand-emerald/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ExternalLink size={32} className="text-brand-emerald" />
                 </div>
-                
-                <div className="p-6 md:p-8">
-                  <span className="text-[10px] text-brand-text-secondary/60 block mb-2 font-medium">{item.source} • {item.date}</span>
-                  <h4 className="text-lg font-bold group-hover:text-brand-emerald transition-colors line-clamp-2 leading-snug">
-                    {item.title}
-                  </h4>
-                  <a href={item.link} className="inline-block mt-4 text-[10px] uppercase tracking-widest text-brand-emerald border-b border-brand-emerald/0 hover:border-brand-emerald transition-all font-bold">
-                    Explore Project
-                  </a>
-                </div>
+                <h4 className="text-2xl font-serif font-bold mb-4">Read My Journal</h4>
+                <p className="text-brand-text-secondary mb-8">Exploring deeper narratives and personal reflections on my Blogspot.</p>
+                <a 
+                  href="http://ummydee.blogspot.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="cta-primary inline-flex items-center gap-2"
+                >
+                  Visit Blogspot <ExternalLink size={14} />
+                </a>
               </motion.div>
-            ))}
+            ) : isPlaceholderCategory ? (
+              <motion.div
+                key="placeholder"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="max-w-xl mx-auto text-center py-20 glass-card border-dashed"
+              >
+                <div className="w-16 h-16 bg-brand-emerald/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  {filter === 'Podcast' ? <Mic size={32} className="text-brand-emerald" /> : <Headphones size={32} className="text-brand-emerald" />}
+                </div>
+                <h4 className="text-2xl font-serif font-bold mb-4">Coming Soon</h4>
+                <p className="text-brand-text-secondary">Content arriving end of month</p>
+              </motion.div>
+            ) : filteredItems.length > 0 ? (
+              <motion.div 
+                key={filter}
+                layout
+                className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8"
+              >
+                {filteredItems.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.5 }}
+                    className="group glass-card overflow-hidden hover:-translate-y-2 hover:shadow-xl transition-all duration-500"
+                  >
+                    <div className="aspect-video relative overflow-hidden">
+                      <img 
+                        src={item.thumbnail} 
+                        alt={item.title} 
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-brand-bg/80 backdrop-blur-sm text-brand-emerald text-[8px] uppercase tracking-widest px-2 py-1 rounded-sm border border-brand-emerald/20 font-bold">
+                          {item.category}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6 md:p-8">
+                      <span className="text-[10px] text-brand-text-secondary/60 block mb-2 font-medium">{item.source} • {item.date}</span>
+                      <h4 className="text-lg font-bold group-hover:text-brand-emerald transition-colors line-clamp-2 leading-snug">
+                        {item.title}
+                      </h4>
+                      <a href={item.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-4 text-[10px] uppercase tracking-widest text-brand-emerald border-b border-brand-emerald/0 hover:border-brand-emerald transition-all font-bold">
+                        Explore Project
+                      </a>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-20"
+              >
+                <p className="text-brand-text-secondary italic">No items found in this category.</p>
+              </motion.div>
+            )}
           </AnimatePresence>
-        </motion.div>
+        </div>
         
         <ScrollReveal>
           <div className="mt-16 text-center">
-            <button className="cta-primary min-w-[200px]">
-              Load More Stories
+            <button className="cta-primary min-w-[200px] opacity-50 cursor-not-allowed">
+              End of Portfolio
             </button>
           </div>
         </ScrollReveal>
