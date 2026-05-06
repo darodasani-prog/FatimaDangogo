@@ -16,6 +16,8 @@ import {
   Linkedin, 
   Instagram, 
   ArrowUp,
+  Star,
+  CheckCircle2
 } from 'lucide-react';
 
 // --- Types ---
@@ -249,42 +251,185 @@ const Hero = () => {
   };
 
   return (
-    <section id="home" className="relative h-[100dvh] min-h-[500px] flex items-center justify-center overflow-hidden bg-brand-bg px-6">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(5,150,105,0.02)_0%,transparent_70%)]" />
+    <section id="home" className="relative h-[100dvh] min-h-[500px] flex items-center justify-center overflow-hidden bg-black px-6">
+      {/* Cinematic Video Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-black/60 z-10" /> {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(5,150,105,0.15)_0%,transparent_70%)] z-20" />
+        <iframe
+          className="w-full h-full scale-[1.5] pointer-events-none opacity-60"
+          src="https://www.youtube.com/embed/wL4sOBkpm0o?autoplay=1&mute=1&loop=1&playlist=wL4sOBkpm0o&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1&fs=0"
+          title="Background Video"
+          frameBorder="0"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        ></iframe>
+      </div>
       
       <motion.div 
         variants={containerVars}
         initial="hidden"
         animate="visible"
-        className="relative z-10 text-center max-w-4xl mx-auto"
+        className="relative z-30 text-center max-w-4xl mx-auto"
       >
         <motion.h1 
           variants={itemVars}
-          className="text-5xl md:text-8xl font-serif font-bold tracking-tighter mb-6 uppercase leading-[0.9]"
+          className="text-5xl md:text-8xl font-serif font-bold tracking-tighter mb-6 uppercase leading-[0.9] text-white"
         >
           Fatima Dangogo
         </motion.h1>
         
         <motion.p 
           variants={itemVars}
-          className="text-sm md:text-xl text-brand-text-secondary tracking-[0.2em] md:tracking-widest uppercase mb-4 font-medium"
+          className="text-sm md:text-xl text-brand-emerald tracking-[0.2em] md:tracking-widest uppercase mb-4 font-bold"
         >
           Journalist. Media Strategist. Documentary Storyteller.
         </motion.p>
         
         <motion.p 
           variants={itemVars}
-          className="text-brand-text-secondary/60 max-w-md mx-auto mb-10 text-xs md:text-base italic leading-relaxed"
+          className="text-white/70 max-w-md mx-auto mb-10 text-xs md:text-base italic leading-relaxed"
         >
           "Amplifying voices through journalism, PR, and documentary filmmaking."
         </motion.p>
         
         <motion.div variants={itemVars}>
-          <a href="#work" className="cta-primary inline-block">
+          <a href="#work" className="cta-primary inline-block !bg-brand-emerald !text-white !border-brand-emerald hover:!bg-transparent">
             View Portfolio
           </a>
         </motion.div>
       </motion.div>
+    </section>
+  );
+};
+
+const Skills = () => {
+  const coreSkills = [
+    { name: "Journalism & Reporting", rating: 5 },
+    { name: "Media Strategy & PR", rating: 5 },
+    { name: "Documentary Filmmaking", rating: 4 },
+    { name: "Political Analysis", rating: 4 },
+    { name: "Content Development", rating: 5 },
+  ];
+
+  const specialties = [
+    { name: "PR", percent: 100, label: "First" },
+    { name: "Journalism", percent: 85, label: "Second" },
+    { name: "Filming", percent: 75, label: "Third" },
+    { name: "Impact", percent: 90, label: "Fourth" },
+  ];
+
+  const languages = [
+    { name: "English", level: 100 },
+    { name: "Hausa", level: 100 },
+    { name: "French", level: 40 },
+    { name: "Arabic", level: 60 },
+  ];
+
+  return (
+    <section id="skills" className="section-padding bg-brand-surface/10">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+        <ScrollReveal>
+          <div className="text-center mb-16 md:mb-20">
+            <SectionLabel>Expertise</SectionLabel>
+            <h3 className="text-3xl md:text-4xl font-serif font-bold">Skills & Specialities</h3>
+          </div>
+        </ScrollReveal>
+
+        <div className="grid lg:grid-cols-3 gap-16 md:gap-24">
+          {/* Core Skills - Star Ratings */}
+          <ScrollReveal delay={0.1}>
+            <div className="space-y-8">
+              <h4 className="text-[10px] uppercase tracking-[0.4em] text-brand-emerald font-bold mb-8">Core Skills</h4>
+              <div className="space-y-6">
+                {coreSkills.map((skill) => (
+                  <div key={skill.name} className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs md:text-sm font-bold text-brand-text">{skill.name}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star 
+                          key={s} 
+                          size={14} 
+                          fill={s <= skill.rating ? "currentColor" : "none"} 
+                          className={s <= skill.rating ? "text-brand-emerald" : "text-brand-subtle"}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Specialities - Circular Progress */}
+          <ScrollReveal delay={0.2}>
+            <div className="space-y-8">
+              <h4 className="text-[10px] uppercase tracking-[0.4em] text-brand-emerald font-bold mb-8">My Specialities</h4>
+              <div className="grid grid-cols-2 gap-8">
+                {specialties.map((spec) => (
+                  <div key={spec.name} className="flex flex-col items-center gap-3">
+                    <div className="relative w-20 h-20 md:w-24 md:h-24 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle
+                          cx="50%"
+                          cy="50%"
+                          r="38%"
+                          className="stroke-brand-subtle fill-none"
+                          strokeWidth="2"
+                        />
+                        <motion.circle
+                          cx="50%"
+                          cy="50%"
+                          r="38%"
+                          className="stroke-brand-emerald fill-none"
+                          strokeWidth="2"
+                          strokeDasharray="100, 100"
+                          initial={{ strokeDashoffset: 100 }}
+                          whileInView={{ strokeDashoffset: 100 - spec.percent }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 1.5, ease: "easeOut" }}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-sm md:text-lg font-serif font-bold">{spec.percent}%</span>
+                        <span className="text-[8px] uppercase tracking-tighter text-brand-text-secondary">{spec.label}</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-text-secondary">{spec.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Languages - Progress Bars */}
+          <ScrollReveal delay={0.3}>
+            <div className="space-y-8">
+              <h4 className="text-[10px] uppercase tracking-[0.4em] text-brand-emerald font-bold mb-8">Languages</h4>
+              <div className="space-y-8">
+                {languages.map((lang) => (
+                  <div key={lang.name} className="space-y-3">
+                    <div className="flex justify-between items-center text-[10px] uppercase tracking-widest font-bold">
+                      <span className="text-brand-text">{lang.name}</span>
+                    </div>
+                    <div className="h-[2px] w-full bg-brand-subtle relative overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${lang.level}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="absolute inset-0 bg-brand-emerald"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+      </div>
     </section>
   );
 };
@@ -618,6 +763,7 @@ export default function App() {
       <main>
         <Hero />
         <About />
+        <Skills />
         <Gallery />
         <Timeline />
         <Contact />
