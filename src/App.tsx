@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode, FormEvent } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'motion/react';
 import { 
   Youtube, 
@@ -26,8 +26,36 @@ import {
   History,
   FileText,
   Video,
-  Globe
+  Globe,
+  Sun,
+  Moon
 } from 'lucide-react';
+
+// --- Theme Management ---
+const useTheme = () => {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved as 'light' | 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+
+  return { theme, toggleTheme };
+};
 
 // --- Types ---
 type Category = 'Writing' | 'News Documentaries' | 'Cultural Documentaries' | 'Audio Reports' | 'Visual Podcast' | 'Podcast' | 'Journal' | 'All';
@@ -208,7 +236,7 @@ const ScrollReveal = ({ children, delay = 0 }: { children: ReactNode, delay?: nu
 
 // --- Components ---
 
-const Navbar = () => {
+const Navbar = ({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleTheme: () => void }) => {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -220,19 +248,40 @@ const Navbar = () => {
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-brand-bg/95 backdrop-blur-md py-4 border-b border-brand-subtle shadow-sm' : 'py-6 md:py-8'}`}>
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex justify-between items-center">
-        <motion.a 
-          href="#home"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="group flex items-center gap-3"
-        >
-          <div className="w-7 h-7 md:w-8 md:h-8 border border-brand-emerald flex items-center justify-center font-serif text-xs md:text-sm text-brand-emerald font-bold group-hover:bg-brand-emerald group-hover:text-white transition-all duration-300">
-            FD
-          </div>
-          <span className="font-serif text-xs md:text-sm tracking-[0.2em] text-brand-text font-bold uppercase hidden sm:block">
-            Fatima Dangogo
-          </span>
-        </motion.a>
+        <div className="flex items-center gap-6 md:gap-12">
+          <motion.a 
+            href="#home"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="group flex items-center gap-3"
+          >
+            <div className="w-7 h-7 md:w-8 md:h-8 border border-brand-emerald flex items-center justify-center font-serif text-xs md:text-sm text-brand-emerald font-bold group-hover:bg-brand-emerald group-hover:text-white transition-all duration-300">
+              FD
+            </div>
+            <span className="font-serif text-xs md:text-sm tracking-[0.2em] text-brand-text font-bold uppercase hidden sm:block">
+              Fatima Dangogo
+            </span>
+          </motion.a>
+
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full border border-brand-subtle text-brand-text-secondary hover:text-brand-emerald hover:border-brand-emerald transition-all duration-500 group relative overflow-hidden"
+            aria-label="Toggle theme"
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={theme}
+                initial={{ y: 20, opacity: 0, rotate: 45 }}
+                animate={{ y: 0, opacity: 1, rotate: 0 }}
+                exit={{ y: -20, opacity: 0, rotate: -45 }}
+                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+              >
+                {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+              </motion.div>
+            </AnimatePresence>
+          </button>
+        </div>
         
         <div className="flex gap-2 min-[375px]:gap-4 md:gap-10 text-[7px] min-[375px]:text-[8px] md:text-[10px] uppercase tracking-wider md:tracking-[0.3em] font-bold text-brand-text-secondary">
           {['About', 'Work', 'Timeline', 'Contact'].map((item) => (
@@ -727,16 +776,37 @@ const Timeline = () => {
 const Contact = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send message");
+      }
+
       setIsSubmitted(true);
-    }, 1500);
+    } catch (err: any) {
+      console.error("Submission error:", err);
+      setError(err.message || "Something went wrong. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -760,11 +830,11 @@ const Contact = () => {
                 className="space-y-6"
               >
                 <div className="grid md:grid-cols-2 gap-6">
-                  <input type="text" placeholder="Your Name" className="input-field" required />
-                  <input type="email" placeholder="Your Email" className="input-field" required />
+                  <input type="text" name="name" placeholder="Your Name" className="input-field" required />
+                  <input type="email" name="email" placeholder="Your Email" className="input-field" required />
                 </div>
                 <div className="relative">
-                  <select className="input-field appearance-none" required>
+                  <select name="subject" className="input-field appearance-none" required>
                     <option value="">Select Subject</option>
                     <option value="media">Media Inquiry</option>
                     <option value="collab">Collaboration</option>
@@ -775,13 +845,13 @@ const Contact = () => {
                     <ArrowUp className="rotate-180" size={14} />
                   </div>
                 </div>
-                <textarea placeholder="Your Message" rows={5} className="input-field" required />
+                <textarea name="message" placeholder="Your Message" rows={5} className="input-field" required />
                 <button 
                   disabled={isSubmitting}
                   className="cta-primary w-full h-14 flex items-center justify-center font-bold relative overflow-hidden group"
                 >
                   <span className={isSubmitting ? 'opacity-0' : 'opacity-100 transition-opacity'}>
-                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                    {isSubmitting ? 'Opening Email...' : 'Open in Gmail/Email'}
                   </span>
                   {isSubmitting && (
                     <motion.div 
@@ -804,15 +874,15 @@ const Contact = () => {
                 <div className="w-20 h-20 bg-brand-emerald/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-brand-emerald/20">
                   <CheckCircle2 size={40} className="text-brand-emerald" />
                 </div>
-                <h4 className="text-2xl md:text-3xl font-serif font-bold mb-4">Message Sent</h4>
+                <h4 className="text-2xl md:text-3xl font-serif font-bold mb-4">Request Prepared</h4>
                 <p className="text-brand-text-secondary max-w-sm mx-auto mb-10">
-                  Thank you for reaching out. Fatima's team will get back to you shortly.
+                  Your message has been drafted in your email client. Simply click "Send" in your email app to finish.
                 </p>
                 <button 
                   onClick={() => setIsSubmitted(false)}
                   className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-emerald border-b border-brand-emerald/40 hover:border-brand-emerald transition-all"
                 >
-                  Send another message
+                  Compose another message
                 </button>
               </motion.div>
             )}
@@ -823,8 +893,8 @@ const Contact = () => {
           <div className="mt-20 border-t border-brand-subtle pt-12 flex flex-col md:flex-row justify-between items-center gap-8">
             <div>
               <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-brand-text-secondary mb-2 font-bold">Direct Contact</p>
-              <a href="mailto:hello@fatimadangogo.com" className="text-lg md:text-xl font-serif hover:text-brand-emerald transition-colors font-bold break-all md:break-normal">
-                hello@fatimadangogo.com
+              <a href="mailto:carleefah@gmail.com" className="text-lg md:text-xl font-serif hover:text-brand-emerald transition-colors font-bold break-all md:break-normal">
+                carleefah@gmail.com
               </a>
             </div>
             
@@ -1019,10 +1089,12 @@ const SectionLabel = ({ children }: { children: ReactNode }) => (
 );
 
 export default function App() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="min-h-screen selection:bg-brand-emerald selection:text-white bg-brand-bg md:cursor-none overflow-x-hidden">
       <Cursor />
-      <Navbar />
+      <Navbar theme={theme} toggleTheme={toggleTheme} />
       <main>
         <Hero />
         <About />

@@ -5,14 +5,32 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", ui-serif, Georgia, serif;
   
-  --color-brand-bg: #FAFAF8;
-  --color-brand-surface: #F5F5F0;
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-surface: var(--brand-surface);
   --color-brand-emerald: #059669;
   --color-brand-emerald-hover: #10B981;
-  --color-brand-text: #1a1a1a;
-  --color-brand-text-secondary: #525252;
+  --color-brand-text: var(--brand-text);
+  --color-brand-text-secondary: var(--brand-text-secondary);
   
-  --border-brand-subtle: rgba(0, 0, 0, 0.08);
+  --color-brand-subtle: var(--brand-border);
+}
+
+:root {
+  --brand-bg: #FAFAF8;
+  --brand-surface: #F5F5F0;
+  --brand-text: #1a1a1a;
+  --brand-text-secondary: #525252;
+  --brand-border: rgba(0, 0, 0, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.4);
+}
+
+.dark {
+  --brand-bg: #0C0C0C;
+  --brand-surface: #141414;
+  --brand-text: #F5F5F0;
+  --brand-text-secondary: #A3A3A3;
+  --brand-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(20, 20, 20, 0.6);
 }
 
 @layer base {
@@ -20,6 +38,7 @@
     scroll-behavior: smooth;
     background-color: var(--color-brand-bg);
     color: var(--color-brand-text);
+    transition: background-color 0.5s ease, color 0.5s ease;
   }
   
   body {
@@ -33,13 +52,14 @@
   }
   
   .glass-card {
-    background: rgba(255, 255, 255, 0.4);
+    background: var(--glass-bg);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--color-brand-subtle);
+    transition: background-color 0.5s ease, border-color 0.5s ease;
   }
   
   .cta-primary {
-    @apply relative border border-brand-emerald text-brand-emerald px-8 py-3 rounded-none uppercase tracking-widest text-xs transition-colors duration-500 font-medium overflow-hidden z-10;
+    @apply relative border border-brand-emerald text-brand-emerald px-8 py-3 rounded-none uppercase tracking-widest text-xs transition-all duration-500 font-medium overflow-hidden z-10;
   }
   
   .cta-primary::before {
@@ -69,6 +89,6 @@
   }
   
   .input-field {
-    @apply w-full bg-white border border-[rgba(0,0,0,0.1)] rounded-lg p-4 outline-none focus:border-brand-emerald focus:ring-3 focus:ring-[rgba(5,150,105,0.1)] transition-all duration-300 placeholder:text-brand-text-secondary/40 text-brand-text;
+    @apply w-full bg-brand-surface border border-brand-subtle rounded-lg p-4 outline-none focus:border-brand-emerald focus:ring-3 focus:ring-[rgba(5,150,105,0.1)] transition-all duration-300 placeholder:text-brand-text-secondary/40 text-brand-text;
   }
 }
