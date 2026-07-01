@@ -110,26 +110,59 @@ async function startServer() {
     }
   });
 
-  // Streaming endpoint for cached Google Drive video
+  // Streaming endpoint for cached Google Drive video supporting HTTP Range Requests
   app.get("/api/video", async (req, res) => {
-    const videoPath = path.resolve("./hero_video.mp4");
-    if (fs.existsSync(videoPath)) {
-      return res.sendFile(videoPath);
+    const videoPath = path.resolve("./hero_video_v2.mp4");
+    
+    // If the video is not downloaded yet, download it
+    if (!fs.existsSync(videoPath)) {
+      console.log("Cached video not found, downloading on-demand...");
+      const success = await downloadGoogleDriveVideo("1PZBzojJq4ILsta40Te-C9uxGKTDH16rL", videoPath);
+      if (!success || !fs.existsSync(videoPath)) {
+        console.error("Failed to download video on-demand, falling back to redirect.");
+        return res.redirect("https://docs.google.com/uc?export=download&id=1PZBzojJq4ILsta40Te-C9uxGKTDH16rL");
+      }
     }
 
-    // Try to download on-demand if not cached yet
-    const success = await downloadGoogleDriveVideo("18KXLgiBVXlwh1LSOvgAadRdbQwyM4moK", videoPath);
-    if (success && fs.existsSync(videoPath)) {
-      return res.sendFile(videoPath);
-    }
+    const stat = fs.statSync(videoPath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
 
-    // Direct fallback redirect if caching completely fails
-    res.redirect("https://docs.google.com/uc?export=download&id=18KXLgiBVXlwh1LSOvgAadRdbQwyM4moK");
+    if (range) {
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+      if (start >= fileSize) {
+        res.status(416).send("Requested range not satisfiable\n" + start + " >= " + fileSize);
+        return;
+      }
+
+      const chunksize = (end - start) + 1;
+      const file = fs.createReadStream(videoPath, { start, end });
+      const head = {
+        "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+        "Accept-Ranges": "bytes",
+        "Content-Length": chunksize,
+        "Content-Type": "video/mp4",
+      };
+
+      res.writeHead(206, head);
+      file.pipe(res);
+    } else {
+      const head = {
+        "Content-Length": fileSize,
+        "Content-Type": "video/mp4",
+        "Accept-Ranges": "bytes"
+      };
+      res.writeHead(200, head);
+      fs.createReadStream(videoPath).pipe(res);
+    }
   });
 
   // Pre-download the video in the background on startup so it is immediately cached for clients
-  const cachedVideoPath = path.resolve("./hero_video.mp4");
-  downloadGoogleDriveVideo("18KXLgiBVXlwh1LSOvgAadRdbQwyM4moK", cachedVideoPath).catch(err => {
+  const cachedVideoPath = path.resolve("./hero_video_v2.mp4");
+  downloadGoogleDriveVideo("1PZBzojJq4ILsta40Te-C9uxGKTDH16rL", cachedVideoPath).catch(err => {
     console.error("Failed to pre-download background video:", err);
   });
 

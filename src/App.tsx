@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, ReactNode, FormEvent } from 'react';
+import { useState, useEffect, ReactNode, FormEvent, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'motion/react';
 import { 
   Youtube, 
@@ -299,6 +299,17 @@ const Navbar = ({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleTheme: 
 };
 
 const Hero = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(err => {
+        console.log("Autoplay blocked or video error:", err);
+      });
+    }
+  }, []);
+
   const containerVars = {
     hidden: { opacity: 0 },
     visible: {
@@ -322,10 +333,12 @@ const Hero = () => {
         <div className="absolute inset-0 bg-black/60 z-10" /> {/* Dark Overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(5,150,105,0.15)_0%,transparent_70%)] z-20" />
         <video
+          ref={videoRef}
           autoPlay
           muted
           loop
           playsInline
+          preload="auto"
           className="w-full h-full object-cover opacity-60 pointer-events-none"
         >
           <source src="/api/video" type="video/mp4" />
