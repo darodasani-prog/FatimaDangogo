@@ -5,6 +5,7 @@ import nodemailer from "nodemailer";
 import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
+import { Readable } from "stream";
 
 dotenv.config();
 
@@ -110,60 +111,72 @@ async function startServer() {
     }
   });
 
-  // Streaming endpoint for cached Google Drive video supporting HTTP Range Requests
+  // Streaming endpoint for Google Drive video supporting HTTP Range Requests on-the-fly
   app.get("/api/video", async (req, res) => {
-    const videoPath = path.resolve("./hero_video_v2.mp4");
-    
-    // If the video is not downloaded yet, download it
-    if (!fs.existsSync(videoPath)) {
-      console.log("Cached video not found, downloading on-demand...");
-      const success = await downloadGoogleDriveVideo("1PZBzojJq4ILsta40Te-C9uxGKTDH16rL", videoPath);
-      if (!success || !fs.existsSync(videoPath)) {
-        console.error("Failed to download video on-demand, falling back to redirect.");
-        return res.redirect("https://docs.google.com/uc?export=download&id=1PZBzojJq4ILsta40Te-C9uxGKTDH16rL");
-      }
-    }
+    try {
+      const fileId = "1PZBzojJq4ILsta40Te-C9uxGKTDH16rL";
+      const baseUrl = "https://docs.google.com/uc?export=download";
+      let url = `${baseUrl}&id=${fileId}`;
 
-    const stat = fs.statSync(videoPath);
-    const fileSize = stat.size;
-    const range = req.headers.range;
-
-    if (range) {
-      const parts = range.replace(/bytes=/, "").split("-");
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-
-      if (start >= fileSize) {
-        res.status(416).send("Requested range not satisfiable\n" + start + " >= " + fileSize);
-        return;
+      // Forward client's range header if it exists
+      const headers: Record<string, string> = {};
+      if (req.headers.range) {
+        headers["Range"] = req.headers.range;
       }
 
-      const chunksize = (end - start) + 1;
-      const file = fs.createReadStream(videoPath, { start, end });
-      const head = {
-        "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-        "Accept-Ranges": "bytes",
-        "Content-Length": chunksize,
-        "Content-Type": "video/mp4",
-      };
+      console.log(`Proxying range request to Google Drive for file ${fileId}, Range: ${req.headers.range || "None"}`);
 
-      res.writeHead(206, head);
-      file.pipe(res);
-    } else {
-      const head = {
-        "Content-Length": fileSize,
-        "Content-Type": "video/mp4",
-        "Accept-Ranges": "bytes"
-      };
-      res.writeHead(200, head);
-      fs.createReadStream(videoPath).pipe(res);
+      let response = await fetch(url, { headers });
+
+      // Handle Google Drive confirmation page if it is returned (e.g., virus warning for large files)
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("text/html")) {
+        const htmlText = await response.text();
+        const confirmMatch = htmlText.match(/confirm=([0-9A-Za-z_]+)/);
+        if (confirmMatch) {
+          const confirmToken = confirmMatch[1];
+          url = `${baseUrl}&confirm=${confirmToken}&id=${fileId}`;
+          response = await fetch(url, { headers });
+        } else {
+          throw new Error("Could not parse Google Drive confirmation token from HTML response.");
+        }
+      }
+
+      if (!response.ok && response.status !== 206) {
+        console.error(`Google Drive proxy request failed with status: ${response.status}`);
+        return res.status(response.status).send(`Failed to stream from Google Drive: status ${response.status}`);
+      }
+
+      // Set headers from Google Drive back to client
+      res.status(response.status);
+      const headersToForward = [
+        "content-type",
+        "content-length",
+        "content-range",
+        "accept-ranges",
+        "cache-control"
+      ];
+      for (const headerName of headersToForward) {
+        const headerValue = response.headers.get(headerName);
+        if (headerValue) {
+          res.setHeader(headerName, headerValue);
+        }
+      }
+
+      // If no content-type was returned, default to video/mp4
+      if (!res.getHeader("content-type")) {
+        res.setHeader("content-type", "video/mp4");
+      }
+
+      if (response.body) {
+        Readable.fromWeb(response.body as any).pipe(res);
+      } else {
+        res.end();
+      }
+    } catch (error) {
+      console.error("Error in /api/video proxy streaming:", error);
+      res.status(500).send("Internal server error streaming video");
     }
-  });
-
-  // Pre-download the video in the background on startup so it is immediately cached for clients
-  const cachedVideoPath = path.resolve("./hero_video_v2.mp4");
-  downloadGoogleDriveVideo("1PZBzojJq4ILsta40Te-C9uxGKTDH16rL", cachedVideoPath).catch(err => {
-    console.error("Failed to pre-download background video:", err);
   });
 
   // Vite middleware for development
