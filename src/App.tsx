@@ -321,14 +321,15 @@ const Hero = () => {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/60 z-10" /> {/* Dark Overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(5,150,105,0.15)_0%,transparent_70%)] z-20" />
-        <iframe
-          className="w-full h-full scale-[1.5] pointer-events-none opacity-60"
-          src="https://www.youtube.com/embed/wL4sOBkpm0o?autoplay=1&mute=1&loop=1&playlist=wL4sOBkpm0o&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&disablekb=1&fs=0"
-          title="Background Video"
-          frameBorder="0"
-          allow="autoplay; encrypted-media"
-          allowFullScreen
-        ></iframe>
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover opacity-60 pointer-events-none"
+        >
+          <source src="/api/video" type="video/mp4" />
+        </video>
       </div>
       
       <motion.div 
