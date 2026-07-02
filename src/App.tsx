@@ -298,18 +298,33 @@ const Navbar = ({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleTheme: 
   );
 };
 
+const VIDEO_SOURCES = [
+  "https://docs.google.com/uc?export=download&id=1PZBzojJq4ILsta40Te-C9uxGKTDH16rL",
+  "https://lh3.googleusercontent.com/d/1PZBzojJq4ILsta40Te-C9uxGKTDH16rL",
+  "/api/video",
+  "https://assets.mixkit.co/videos/preview/mixkit-beautiful-island-resort-aerial-view-40348-large.mp4"
+];
+
 const Hero = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoError, setVideoError] = useState(false);
+  const [sourceIndex, setSourceIndex] = useState(0);
 
   useEffect(() => {
-    if (videoRef.current && !videoError) {
+    if (videoRef.current) {
       videoRef.current.muted = true;
+      videoRef.current.load();
       videoRef.current.play().catch(err => {
         console.log("Autoplay blocked or video error:", err);
       });
     }
-  }, [videoError]);
+  }, [sourceIndex]);
+
+  const handleVideoError = () => {
+    console.log(`Video source failed to play: ${VIDEO_SOURCES[sourceIndex]}. Trying next fallback...`);
+    if (sourceIndex < VIDEO_SOURCES.length - 1) {
+      setSourceIndex(prev => prev + 1);
+    }
+  };
 
   const containerVars = {
     hidden: { opacity: 0 },
@@ -333,30 +348,18 @@ const Hero = () => {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/60 z-10" /> {/* Dark Overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(5,150,105,0.15)_0%,transparent_70%)] z-20" />
-        {!videoError ? (
-          <video
-            ref={videoRef}
-            src="/api/video"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            onError={() => {
-              console.log("Direct video play failed, falling back to iframe embed.");
-              setVideoError(true);
-            }}
-            className="w-full h-full object-cover opacity-60 pointer-events-none"
-          />
-        ) : (
-          <iframe
-            className="w-full h-full scale-[1.3] pointer-events-none opacity-60"
-            src="https://drive.google.com/file/d/1PZBzojJq4ILsta40Te-C9uxGKTDH16rL/preview?autoplay=1&mute=1"
-            title="Background Video Fallback"
-            frameBorder="0"
-            allow="autoplay; encrypted-media"
-          ></iframe>
-        )}
+        <video
+          ref={videoRef}
+          src={VIDEO_SOURCES[sourceIndex]}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          referrerPolicy="no-referrer"
+          onError={handleVideoError}
+          className="w-full h-full object-cover opacity-60 pointer-events-none"
+        />
       </div>
       
       <motion.div 

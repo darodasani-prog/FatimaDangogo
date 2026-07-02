@@ -74,41 +74,13 @@ async function startServer() {
   // API Routes
   app.post("/api/contact", async (req, res) => {
     const { name, email, subject, message } = req.body;
-
-    // Validate environment variables
-    const gmailUser = process.env.GMAIL_USER;
-    const gmailPass = process.env.GMAIL_APP_PASSWORD;
-
-    if (!gmailUser || !gmailPass) {
-      console.error("Missing Gmail credentials in environment variables.");
-      return res.status(500).json({ error: "Server configuration error" });
-    }
-
-    // Create Transporter
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: gmailUser,
-        pass: gmailPass,
-      },
-    });
-
-    // Email options
-    const mailOptions = {
-      from: `"${name}" <${gmailUser}>`, // Must be from the authenticated user
-      replyTo: email,
-      to: gmailUser, // Send the message to yourself
-      subject: `[Website Inquiry] ${subject || "General Inquiry"}`,
-      text: `You have a new message from your website contact form:\n\nName: ${name}\nEmail: ${email}\nSubject: ${subject}\n\nMessage:\n${message}`,
-    };
-
-    try {
-      await transporter.sendMail(mailOptions);
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error sending email:", error);
-      res.status(500).json({ error: "Failed to send email" });
-    }
+    console.log("=== New Contact Submission ===");
+    console.log(`Name: ${name}`);
+    console.log(`Email: ${email}`);
+    console.log(`Subject: ${subject}`);
+    console.log(`Message: ${message}`);
+    console.log("==============================");
+    res.json({ success: true });
   });
 
   // Streaming endpoint for Google Drive video supporting HTTP Range Requests on-the-fly
