@@ -902,8 +902,8 @@ const Contact = () => {
           <div className="mt-20 border-t border-brand-subtle pt-12 flex flex-col md:flex-row justify-between items-center gap-8">
             <div>
               <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-brand-text-secondary mb-2 font-bold">Direct Contact</p>
-              <a href="mailto:carleefah@gmail.com" className="text-lg md:text-xl font-serif hover:text-brand-emerald transition-colors font-bold break-all md:break-normal">
-                carleefah@gmail.com
+              <a href="mailto:fatimadangogo@gmail.com" className="text-lg md:text-xl font-serif hover:text-brand-emerald transition-colors font-bold break-all md:break-normal">
+                fatimadangogo@gmail.com
               </a>
             </div>
             
