@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect, ReactNode, FormEvent, useRef } from 'react';
+import { useForm, ValidationError } from '@formspree/react';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'motion/react';
 import { 
   Youtube, 
@@ -299,9 +300,9 @@ const Navbar = ({ theme, toggleTheme }: { theme: 'light' | 'dark', toggleTheme: 
 };
 
 const VIDEO_SOURCES = [
-  "https://docs.google.com/uc?export=download&id=1PZBzojJq4ILsta40Te-C9uxGKTDH16rL",
-  "https://lh3.googleusercontent.com/d/1PZBzojJq4ILsta40Te-C9uxGKTDH16rL",
+  "/hero_video.mp4",
   "/api/video",
+  "https://docs.google.com/uc?export=download&id=1PZBzojJq4ILsta40Te-C9uxGKTDH16rL",
   "https://assets.mixkit.co/videos/preview/mixkit-beautiful-island-resort-aerial-view-40348-large.mp4"
 ];
 
@@ -805,40 +806,7 @@ const Timeline = () => {
 };
 
 const Contact = () => {
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-    
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-
-    try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to send message");
-      }
-
-      setIsSubmitted(true);
-    } catch (err: any) {
-      console.error("Submission error:", err);
-      setError(err.message || "Something went wrong. Please try again later.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const [state, handleSubmit, reset] = useForm('mojopzqv');
 
   return (
     <section id="contact" className="section-padding bg-brand-surface/30">
@@ -851,7 +819,7 @@ const Contact = () => {
           </div>
         
           <AnimatePresence mode="wait">
-            {!isSubmitted ? (
+            {!state.succeeded ? (
               <motion.form 
                 key="contact-form"
                 initial={{ opacity: 0 }}
@@ -861,11 +829,17 @@ const Contact = () => {
                 className="space-y-6"
               >
                 <div className="grid md:grid-cols-2 gap-6">
-                  <input type="text" name="name" placeholder="Your Name" className="input-field" required />
-                  <input type="email" name="email" placeholder="Your Email" className="input-field" required />
+                  <div>
+                    <input type="text" name="name" placeholder="Your Name" className="input-field w-full" required />
+                    <ValidationError field="name" prefix="Name" errors={state.errors} className="text-red-500 text-xs mt-1 block" />
+                  </div>
+                  <div>
+                    <input type="email" name="email" placeholder="Your Email" className="input-field w-full" required />
+                    <ValidationError field="email" prefix="Email" errors={state.errors} className="text-red-500 text-xs mt-1 block" />
+                  </div>
                 </div>
                 <div className="relative">
-                  <select name="subject" className="input-field appearance-none" required>
+                  <select name="subject" className="input-field appearance-none w-full" required>
                     <option value="">Select Subject</option>
                     <option value="media">Media Inquiry</option>
                     <option value="collab">Collaboration</option>
@@ -875,16 +849,20 @@ const Contact = () => {
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-brand-text-secondary/50">
                     <ArrowUp className="rotate-180" size={14} />
                   </div>
+                  <ValidationError field="subject" prefix="Subject" errors={state.errors} className="text-red-500 text-xs mt-1 block" />
                 </div>
-                <textarea name="message" placeholder="Your Message" rows={5} className="input-field" required />
+                <div>
+                  <textarea name="message" placeholder="Your Message" rows={5} className="input-field w-full" required />
+                  <ValidationError field="message" prefix="Message" errors={state.errors} className="text-red-500 text-xs mt-1 block" />
+                </div>
                 <button 
-                  disabled={isSubmitting}
-                  className="cta-primary w-full h-14 flex items-center justify-center font-bold relative overflow-hidden group"
+                  disabled={state.submitting}
+                  className="cta-primary w-full h-14 flex items-center justify-center font-bold relative overflow-hidden group disabled:opacity-50"
                 >
-                  <span className={isSubmitting ? 'opacity-0' : 'opacity-100 transition-opacity'}>
-                    {isSubmitting ? 'Opening Email...' : 'Open in Gmail/Email'}
+                  <span className={state.submitting ? 'opacity-0' : 'opacity-100 transition-opacity'}>
+                    {state.submitting ? 'Sending...' : 'Send Inquiry'}
                   </span>
-                  {isSubmitting && (
+                  {state.submitting && (
                     <motion.div 
                       className="absolute inset-0 flex items-center justify-center"
                       initial={{ opacity: 0 }}
@@ -905,12 +883,12 @@ const Contact = () => {
                 <div className="w-20 h-20 bg-brand-emerald/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-brand-emerald/20">
                   <CheckCircle2 size={40} className="text-brand-emerald" />
                 </div>
-                <h4 className="text-2xl md:text-3xl font-serif font-bold mb-4">Request Prepared</h4>
+                <h4 className="text-2xl md:text-3xl font-serif font-bold mb-4">Message Sent</h4>
                 <p className="text-brand-text-secondary max-w-sm mx-auto mb-10">
-                  Your message has been drafted in your email client. Simply click "Send" in your email app to finish.
+                  Thank you for your message! Fatima will get back to you as soon as possible.
                 </p>
                 <button 
-                  onClick={() => setIsSubmitted(false)}
+                  onClick={reset}
                   className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-emerald border-b border-brand-emerald/40 hover:border-brand-emerald transition-all"
                 >
                   Compose another message
